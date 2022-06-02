@@ -14,7 +14,7 @@ function Home({ tweets }) {
   const error = <p className="text-2xl font-bold">You're not logged</p>;
   let loading = status === "loading";
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (!content) {
@@ -22,11 +22,13 @@ function Home({ tweets }) {
       return;
     }
 
-    fetch('/api/tweet', {
+    await fetch('/api/tweet', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content }),
     });
+
+    router.reload(window.location.pathname);
   }
 
   const handleOnChange = (event) => {
@@ -40,6 +42,10 @@ function Home({ tweets }) {
 
   if (loading) {
     return null;
+  }
+
+  if (session && !session.user.name) {
+    router.push('/setup')
   }
 
   return ( 
