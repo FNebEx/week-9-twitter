@@ -1,12 +1,18 @@
 import NewTweet from "components/NewTweet";
+import Tweets from "components/Tweets";
+import { getTweets } from "lib/data";
+import prisma from "lib/prisma";
 import { signOut, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
 import { useState } from "react";
 
-function Home() {
+function Home({ tweets }) {
   const { data: session, status } = useSession();
   const [content, setContent] = useState('');
+  const router = useRouter();
   const handleSignOut = () => signOut();
-  let error = <p className="text-2xl font-bold">You're not logged</p>;
+  const error = <p className="text-2xl font-bold">You're not logged</p>;
+  let loading = status === "loading";
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -27,23 +33,38 @@ function Home() {
     setContent(event.target.value);
   }
 
-  if (!session || !session.user) return error;
+  if (!session) {
+    // router.push('/');
+    console.log(123);
+  }
 
-  if (status === 'loading') {
-    return <p>Loading ...</p>
+  if (loading) {
+    return null;
   }
 
   return ( 
     <div>
       <h1>Home</h1>
-      { session ? <NewTweet handleSubmit={handleSubmit} handleOnChange={handleOnChange}/> : error }
       { session && <button 
         onClick={handleSignOut} 
-        className="border rounded px-10 py-2 bg-cyan-500 text-white"
+        className="border rounded px-10 py-2 bg-cyan-500 text-white inline"
       >Log Out</button>}
      
+      <NewTweet handleSubmit={handleSubmit} handleOnChange={handleOnChange}/>
+      <Tweets tweets={tweets}/>
     </div>
   );
 }
 
 export default Home;
+
+export async function getServerSideProps() {
+  let tweets = await getTweets(prisma);
+  tweets = JSON.parse(JSON.stringify(tweets));
+
+  return {
+    props: {
+      tweets
+    }
+  }
+}
