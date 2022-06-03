@@ -2,7 +2,7 @@ import NewTweet from "components/NewTweet";
 import Tweets from "components/Tweets";
 import { getTweets } from "lib/data";
 import prisma from "lib/prisma";
-import { signOut, useSession } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/router";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ function Home({ tweets }) {
   const [content, setContent] = useState('');
   const router = useRouter();
   const handleSignOut = () => signOut();
+  const handleSignIn = () => signIn();
   const error = <p className="text-2xl font-bold">You're not logged</p>;
   let loading = status === "loading";
 
@@ -50,7 +51,9 @@ function Home({ tweets }) {
 
   return ( 
     <div>
-      <h1>Home</h1>
+      <h1 className="text-4xl font-bold">Home</h1>
+      { !session && <button onClick={handleSignIn} className="border rounded px-10 py-2 bg-cyan-500 text-white inline">Sign In</button> }
+      { session && <h1>Welcome {session && session.user.name }</h1>}
       { session && <button 
         onClick={handleSignOut} 
         className="border rounded px-10 py-2 bg-cyan-500 text-white inline"
